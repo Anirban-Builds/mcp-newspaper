@@ -41,7 +41,7 @@ app = FastAPI(title="mcp-news-app", lifespan=_run_mcp_server)
 
 @app.get("/")
 async def root():
-    return {"status": "ok", "message": "Space is running"}
+    return {"status": "ok", "message": "Space is running ✅"}
 
 @app.get("/ask-news")
 async def handle_ask_news(user_prompt: str):
@@ -64,5 +64,5 @@ async def handle_ask_news(user_prompt: str):
         )
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=7860, reload=True)
 
