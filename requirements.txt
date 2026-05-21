@@ -1,0 +1,6 @@
+huggingface-hub
+gradio
+mcp[cli]
+httpx
+dotenv
+google-genai
