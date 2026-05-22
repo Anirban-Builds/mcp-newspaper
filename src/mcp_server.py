@@ -2,8 +2,11 @@ import os
 import httpx
 from mcp.server.fastmcp import FastMCP
 
-NEWSAPI_KEY = os.getenv("NEWSAPI_KEY")
-NEWSAPI_URL = "https://newsapi.org/v2/everything"
+# NEWSAPI_KEY = os.getenv("NEWSAPI_KEY")
+# NEWSAPI_URL = "https://newsapi.org/v2/everything"
+
+WORLDNEWS_API_KEY = os.getenv("WORLDNEWS_KEY")
+WORLDNEWS_URL = "https://api.worldnewsapi.com/search-news"
 
 mcp = FastMCP("mcp-news-server")
 
@@ -16,25 +19,25 @@ async def fetch_news_stream(
     '''
     Search and fetch real-time news articles from NewsAPI based on the LLM's extracted keywords.
     '''
-    if not NEWSAPI_KEY:
+    if not WORLDNEWS_API_KEY:
         return "Error. Key missing."
 
     params = {
-        "q" : query,
+        "text" : query,
         "language" : language,
-        "pageSize" : min(max(page_size, 1), 10),
-        "apiKey" : NEWSAPI_KEY,
+        "number" : min(max(page_size, 1), 10),
+        "apiKey" : WORLDNEWS_API_KEY,
     }
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(NEWSAPI_URL, params=params)
+            response = await client.get(WORLDNEWS_URL, params=params)
 
             if response.status_code != 200:
                 return f"HTTP API Failure: Endpoint returned error code {response.status_code}."
 
             data = response.json()
-            articles = data.get("articles", [])
+            articles = data.get("news", [])
 
             if not articles:
                 return f"Query returned empty. No articles found matching: '{query}'."
@@ -42,14 +45,17 @@ async def fetch_news_stream(
             compiled_report = []
             for index, item in enumerate(articles, 1):
                 title = item.get("title", "Untitled Article")
-                source = item.get("source", {}).get("name", "Unknown Publisher")
-                description = item.get("description", "No content abstract available.")
+                text = item.get("text", "No content abstract available.")
+                summary = item.get("summary", "No summary available.")
                 url = item.get("url", "No Link")
+                # image = item.get("image", "No image")
+                source = ", ".join("authors", []) or "Unknown Author"
 
                 news_block = (
                     f"### [Article #{index}] {title}\n"
-                    f"**Publisher:** {source} | **URL:** {url}\n"
-                    f"**Abstract:** {description}\n"
+                    f"**Author(s):** {source} | **URL:** {url}\n"
+                    f"**Summary:** {summary}\n"
+                    f"**Full Content:** {text}\n"
                     f"{'='*50}"
                 )
                 compiled_report.append(news_block)
