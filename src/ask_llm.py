@@ -59,7 +59,14 @@ class LLMNewsEngine:
                     f"You are an expert news curator. Turn this raw news feed into a cohesive, "
                     f"highly readable summary matching the user's initial request.\n\n"
                     f"USER ORIGINAL INTENT: {prompt}\n\n"
-                    f"RAW DATA:\n{raw_res}"
+                    f"RAW DATA:\n{raw_res}\n\n"
+                    f"IMPORTANT: At the end of your response, include a '## Sources' section "
+                    f"listing all article titles with their URLs in markdown link format: "
+                    f"[Article Title](URL). Only include links that are present in the raw data."
+                    f"IMPORTANT: At the end of your response, include a '## Sources' section "
+                    f"listing all article titles with their URLs in markdown link format: "
+                    f"[Article Title](URL). Only include links that are explicitly present in the raw data. "
+                    f"Do not invent or guess any URLs."
                 )
             )
             return final_res.text
