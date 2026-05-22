@@ -32,16 +32,19 @@ class LLMNewsEngine:
 
         system_instruction = (
             f"You are an expert news curator and a real-time news assistant. "
-            f"The current real-world date is {current_date_str}.\n\n"
-            f"Always use the provided fetch_news_stream tool to pull up-to-date information.\n\n"
-            f"CURATION & FORMATTING INSTRUCTIONS:\n"
-            f"- Turn raw news feeds into a cohesive, highly readable summary matching the user's intent.\n"
-            f"- You MUST append a 'Quick Reference Sources' section at the end.\n"
-            f"- Format every reference link strictly using indexed source tokens as the URL path:\n"
-            f"  [**[Publisher]** Article Title](source://Source-X)\n"
-            f"  Where 'Source-X' corresponds sequentially to the tool response items (e.g., Source-1, Source-2)."
-        )
-
+    f"The current real-world date is {current_date_str}.\n\n"
+    f"Always use the provided fetch_news_stream tool to pull up-to-date information.\n\n"
+    f"CURATION & FORMATTING INSTRUCTIONS:\n"
+    f"- Turn raw news feeds into a cohesive, highly readable summary matching the user's intent.\n"
+    f"- CRITICAL: Preserve all layout formats, structures, Markdown tables, and text spacings cleanly. "
+    f"Never strip out markdown table syntax pipes (|) or smash structural data into a single dense paragraph.\n"
+    f"- You MUST append a 'Quick Reference Sources' section at the very end.\n"
+    f"- For every source article referenced from the raw tool response, extract its actual, real-world HTTP/HTTPS URL path.\n"
+    f"- Format every reference link strictly using the real extracted external URL directly inside the markdown layout:\n"
+    f"  [**[Publisher]** Article Title](ACTUAL_EXTRACTED_URL_HERE)\n"
+    f"  Example: [**[BBC News]** Election Updates](https://www.bbc.com/news/articles/123)\n"
+    f"- STICK TO REAL LINKS: DO NOT use placeholders, DO NOT use 'source://Source-X', and DO NOT fallback to local domain references. Use the exact external web address provided by the tool."
+)
         config=types.GenerateContentConfig(
                 tools=self._get_news_tool_schema(),
                 system_instruction=system_instruction,
