@@ -26,7 +26,7 @@ async def fetch_news_stream(
         "text" : query,
         "language" : language,
         "number" : min(max(page_size, 1), 10),
-        "apiKey" : WORLDNEWS_API_KEY,
+        "api-key" : WORLDNEWS_API_KEY,
     }
 
     try:
