@@ -49,7 +49,7 @@ async def fetch_news_stream(
                 summary = item.get("summary", "No summary available.")
                 url = item.get("url", "No Link")
                 # image = item.get("image", "No image")
-                source = ", ".join("authors", []) or "Unknown Author"
+                source = ", ".join(item.get("authors", [])) or "Unknown Author"
 
                 news_block = (
                     f"### [Article #{index}] {title}\n"
