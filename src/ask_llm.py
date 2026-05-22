@@ -31,22 +31,32 @@ class LLMNewsEngine:
         current_date_str = datetime.now().strftime("%A, %B %d, %Y")
 
         system_instruction = (
-            f"You are a real-time news assistant. The current real-world date is {current_date_str}. "
-            f"Do not treat the current year or date as the future. It is the present. "
-            f"Always use the provided fetch_news_stream tool to pull up-to-date information."
-            f"CRITICAL FORMATTING INSTRUCTIONS:\n"
-            f"When compiling the news summary, you MUST append a 'Quick Reference Sources' section at the end.\n"
-            f"Format every reference link strictly using indexed source tokens as the URL path:\n"
-            f"- [**[Publisher]** Article Title](source://Source-X)\n"
-            f"Where 'Source-X' corresponds sequentially to the raw context item index (e.g., Source-1, Source-2)."
+            f"You are an expert news curator and a real-time news assistant. "
+            f"The current real-world date is {current_date_str}.\n\n"
+            f"Always use the provided fetch_news_stream tool to pull up-to-date information.\n\n"
+            f"CURATION & FORMATTING INSTRUCTIONS:\n"
+            f"- Turn raw news feeds into a cohesive, highly readable summary matching the user's intent.\n"
+            f"- You MUST append a 'Quick Reference Sources' section at the end.\n"
+            f"- Format every reference link strictly using indexed source tokens as the URL path:\n"
+            f"  [**[Publisher]** Article Title](source://Source-X)\n"
+            f"  Where 'Source-X' corresponds sequentially to the tool response items (e.g., Source-1, Source-2)."
+        )
+
+        config=types.GenerateContentConfig(
+                tools=self._get_news_tool_schema(),
+                system_instruction=system_instruction,
+                temperature= 0.3,
+        )
+
+        user_content = types.Content(
+            role="user",
+            parts=[types.Part.from_text(text=prompt)]
         )
 
         init_res = self.client.models.generate_content(
             model=self.model_name,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                tools=self._get_news_tool_schema(),
-                system_instruction=system_instruction),
+            contents=[user_content],
+            config= config,
         )
 
         if init_res.function_calls:
@@ -58,14 +68,26 @@ class LLMNewsEngine:
                 arguments={"query": ext_query}
             )
             raw_res = mcp_res.content[0].text
+
+            model_function_call_content = init_res.candidates[0].content
+
+            tool_response_part = types.Part.from_function_response(
+                name=tool_call.name,
+                response={"result": raw_res}
+            )
+            tool_response_content = types.Content(
+                role="tool",
+                parts=[tool_response_part]
+            )
+
             final_res = self.client.models.generate_content(
                 model=self.model_name,
-                contents=(
-                    f"You are an expert news curator. Turn this raw news feed into a cohesive, "
-                    f"highly readable summary matching the user's initial request.\n\n"
-                    f"USER ORIGINAL INTENT: {prompt}\n\n"
-                    f"RAW DATA:\n{raw_res}"
-                )
+                contents=[
+                    user_content,
+                    model_function_call_content,
+                    tool_response_content
+                    ],
+                config= config
             )
             return final_res.text
         return init_res.text
