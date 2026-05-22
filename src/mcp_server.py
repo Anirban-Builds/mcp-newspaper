@@ -14,7 +14,7 @@ mcp = FastMCP("mcp-news-server")
 async def fetch_news_stream(
     query : str,
     language : str = "en",
-    page_size : int = 5
+    page_size : int = 10
 ) -> str:
     '''
     Search and fetch real-time news articles from NewsAPI based on the LLM's extracted keywords.
@@ -25,7 +25,7 @@ async def fetch_news_stream(
     params = {
         "text" : query,
         "language" : language,
-        "number" : min(max(page_size, 1), 10),
+        "number" : min(max(page_size, 1), 100),
         "api-key" : WORLDNEWS_API_KEY,
     }
 
