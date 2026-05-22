@@ -34,6 +34,11 @@ class LLMNewsEngine:
             f"You are a real-time news assistant. The current real-world date is {current_date_str}. "
             f"Do not treat the current year or date as the future. It is the present. "
             f"Always use the provided fetch_news_stream tool to pull up-to-date information."
+            f"CRITICAL FORMATTING INSTRUCTIONS:\n"
+            f"When compiling the news summary, you MUST append a 'Quick Reference Sources' section at the end.\n"
+            f"Format every reference link strictly using indexed source tokens as the URL path:\n"
+            f"- [**[Publisher]** Article Title](source://Source-X)\n"
+            f"Where 'Source-X' corresponds sequentially to the raw context item index (e.g., Source-1, Source-2)."
         )
 
         init_res = self.client.models.generate_content(
