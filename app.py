@@ -6,6 +6,7 @@ import uvicorn
 from src.ask_llm import LLMNewsEngine
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
@@ -37,7 +38,17 @@ async def _run_mcp_server(app: FastAPI):
     finally:
         await transport.__aexit__(None, None, None)
 
+origins = [os.getenv("CORS")]
+
 app = FastAPI(title="mcp-news-app", lifespan=_run_mcp_server)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def root():
